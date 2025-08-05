@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FileDrop - Simple File Sharing</title>
+    <title>QuickDrop - Instant File Sharing</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -13,10 +13,11 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
             min-height: 100vh;
-            color: black;
+            color: #333;
+            line-height: 1.6;
         }
         
         .container {
@@ -30,66 +31,66 @@
         }
         
         .card {
-            background-color: #f0f0f0;
-            border-radius: 20px;
+            background: white;
+            border-radius: 12px;
             padding: 40px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e5e5;
         }
         
-        .card:hover {
-            transform: translateY(-5px);
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
         }
         
         h1 {
-            color: black;
-            margin-bottom: 10px;
+            color: #000;
+            margin-bottom: 8px;
             font-size: 2.5rem;
             font-weight: 700;
         }
         
         .subtitle {
             color: #666;
-            margin-bottom: 40px;
             font-size: 1.1rem;
         }
         
         .upload-section {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
         
         .upload-area {
-            border: 3px dashed #ccc;
-            border-radius: 15px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
             padding: 60px 20px;
             margin-bottom: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #f8f8f8;
+            background: #fafafa;
+            text-align: center;
         }
         
         .upload-area:hover, .upload-area.dragover {
-            border-color: #666;
-            background: #e0e0e0;
-            transform: scale(1.02);
+            border-color: #000;
+            background: #f0f0f0;
         }
         
         .upload-icon {
-            font-size: 4rem;
-            color: #ccc;
+            font-size: 3rem;
+            color: #999;
             margin-bottom: 20px;
             transition: color 0.3s ease;
         }
         
         .upload-area:hover .upload-icon {
-            color: #666;
+            color: #000;
         }
         
         .upload-text {
             font-size: 1.2rem;
-            color: black;
-            margin-bottom: 10px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
         }
         
         .upload-subtext {
@@ -102,28 +103,42 @@
         }
         
         .btn {
-            background-color: #666;
+            background: #000;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
+            padding: 12px 24px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: inline-block;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: #333;
         }
         
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #555;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
         }
         
         .progress-container {
@@ -133,106 +148,137 @@
         
         .progress-bar {
             width: 100%;
-            height: 8px;
-            background: #ccc;
-            border-radius: 4px;
+            height: 4px;
+            background: #e5e5e5;
+            border-radius: 2px;
             overflow: hidden;
+            margin-bottom: 10px;
         }
         
         .progress-fill {
             height: 100%;
-            background: #666;
+            background: #000;
             width: 0%;
             transition: width 0.3s ease;
         }
         
+        .loading-text {
+            color: #666;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        .loading-text i {
+            animation: spin 1s linear infinite;
+        }
+        
         .file-display {
             display: none;
-            margin-top: 30px;
         }
         
         .file-info {
-            background: #f8f8f8;
-            border-radius: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            border-left: 4px solid #666;
+            border-left: 4px solid #000;
         }
         
         .file-name {
             font-weight: 600;
-            color: black;
+            color: #000;
             margin-bottom: 5px;
+            word-break: break-all;
         }
         
-        .file-size {
+        .file-details {
             color: #666;
             font-size: 0.9rem;
         }
         
         .file-preview {
-            max-width: 100%;
             margin: 20px 0;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
         
-        .file-preview img, .file-preview video, .file-preview audio, .file-preview iframe {
+        .file-preview img, .file-preview video {
             max-width: 100%;
             height: auto;
-            border-radius: 10px;
+            border-radius: 8px;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .file-preview audio {
+            width: 100%;
+        }
+        
+        .no-preview {
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .no-preview i {
+            font-size: 3rem;
+            color: #ccc;
+            margin-bottom: 15px;
         }
         
         .share-section {
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            border-radius: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
         }
         
         .share-title {
-            color: black;
+            color: #000;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .share-link-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
         }
         
         .share-link {
             background: white;
             border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            width: 100%;
+            border-radius: 6px;
+            padding: 10px 12px;
+            flex: 1;
             font-family: monospace;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #333;
         }
         
-        .copy-btn {
-            background: #666;
-            margin-left: 10px;
-        }
-        
-        .copy-btn:hover {
-            background: #444;
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         
         .error {
-            background: #ffcccc;
-            color: #cc0000;
+            background: #f8d7da;
+            color: #721c24;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin: 20px 0;
-            border-left: 4px solid #cc0000;
+            border: 1px solid #f5c6cb;
         }
         
-        .loading {
-            display: none;
-            color: #666;
-        }
-        
-        .loading i {
-            animation: spin 1s linear infinite;
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
         }
         
         @keyframes spin {
@@ -242,11 +288,11 @@
         
         @media (max-width: 768px) {
             .container {
-                padding: 10px;
+                padding: 15px;
             }
             
             .card {
-                padding: 20px;
+                padding: 25px;
             }
             
             h1 {
@@ -256,50 +302,69 @@
             .upload-area {
                 padding: 40px 15px;
             }
+            
+            .share-link-container {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1><i class="fas fa-cloud-upload-alt"></i> FileDrop</h1>
-            <p class="subtitle">Upload and share files instantly with custom links</p>
+            <div class="header">
+                <h1><i class="fas fa-paper-plane"></i> QuickDrop</h1>
+                <p class="subtitle">Share files instantly with anyone, anywhere</p>
+            </div>
             
             <div class="upload-section" id="uploadSection">
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                    <div class="upload-text">Drop files here or click to browse</div>
-                    <div class="upload-subtext">Any file type, up to 100MB</div>
+                    <div class="upload-text">Drop your file here or click to browse</div>
+                    <div class="upload-subtext">Any file type • Max 10MB for sharing</div>
                 </div>
                 <input type="file" id="fileInput" accept="*/*">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-folder-open"></i> Choose File
-                </button>
+                <div style="text-align: center;">
+                    <button class="btn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-folder-open"></i> Choose File
+                    </button>
+                </div>
             </div>
             
             <div class="progress-container" id="progressContainer">
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
-                <div class="loading" id="loadingText">
-                    <i class="fas fa-spinner"></i> Uploading...
+                <div class="loading-text" id="loadingText">
+                    <i class="fas fa-spinner"></i> Processing file...
                 </div>
             </div>
             
-            <div id="errorMessage"></div>
+            <div id="messageContainer"></div>
             
             <div class="file-display" id="fileDisplay">
                 <div class="file-info" id="fileInfo"></div>
                 <div class="file-preview" id="filePreview"></div>
                 <div class="share-section">
-                    <div class="share-title"><i class="fas fa-link"></i> Share this file:</div>
-                    <input type="text" class="share-link" id="shareLink" readonly>
-                    <button class="btn copy-btn" onclick="copyToClipboard()">
-                        <i class="fas fa-copy"></i> Copy Link
-                    </button>
-                    <button class="btn" onclick="resetUpload()">
-                        <i class="fas fa-upload"></i> Upload Another
-                    </button>
+                    <div class="share-title"><i class="fas fa-share-alt"></i> Share this file</div>
+                    <div class="share-link-container">
+                        <input type="text" class="share-link" id="shareLink" readonly>
+                        <button class="btn" onclick="copyToClipboard()" id="copyBtn">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="downloadCurrentFile()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn" onclick="resetUpload()">
+                            <i class="fas fa-plus"></i> Upload Another
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -307,21 +372,25 @@
 
     <script>
         let currentFileData = null;
-        let uploadedFiles = {};
 
-        // Check if viewing a shared file
+        // Check if viewing a shared file on page load
         window.addEventListener('load', function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const fileId = urlParams.get('file');
-            if (fileId && uploadedFiles[fileId]) {
-                displaySharedFile(uploadedFiles[fileId]);
+            const fileData = urlParams.get('d');
+            
+            if (fileData) {
+                try {
+                    const decodedData = JSON.parse(atob(fileData));
+                    displaySharedFile(decodedData);
+                } catch (error) {
+                    showMessage('Invalid or corrupted file link', 'error');
+                }
             }
         });
 
-        // File input handling
+        // File input and drag/drop setup
         document.getElementById('fileInput').addEventListener('change', handleFileSelect);
         
-        // Drag and drop handling
         const uploadArea = document.getElementById('uploadArea');
         uploadArea.addEventListener('click', () => document.getElementById('fileInput').click());
         uploadArea.addEventListener('dragover', handleDragOver);
@@ -351,78 +420,52 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 100 * 1024 * 1024) {
-                showError('File size must be less than 100MB');
+            // File size limit for URL sharing (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage('File size must be less than 10MB for link sharing', 'error');
                 return;
             }
 
-            uploadFile(file);
+            processFile(file);
         }
 
-        async function uploadFile(file) {
+        function processFile(file) {
             showProgress();
-            hideError();
+            clearMessages();
 
-            try {
-                // Simulate upload progress
-                const progressFill = document.getElementById('progressFill');
-                const loadingText = document.getElementById('loadingText');
-                loadingText.style.display = 'block';
-                
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress += Math.random() * 15;
-                    if (progress > 90) progress = 90;
-                    progressFill.style.width = progress + '%';
-                }, 200);
-
-                // Simulate file upload with local storage
-                const fileId = generateFileId();
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
                     const fileData = {
-                        id: fileId,
                         name: file.name,
                         size: file.size,
                         type: file.type,
                         data: e.target.result,
-                        uploadDate: new Date().toLocaleString()
+                        timestamp: Date.now()
                     };
 
-                    // Store in memory for this session
-                    uploadedFiles[fileId] = fileData;
                     currentFileData = fileData;
-
-                    // Complete progress
-                    clearInterval(progressInterval);
-                    progressFill.style.width = '100%';
                     
+                    // Simulate processing time
                     setTimeout(() => {
                         hideProgress();
                         displayFile(fileData);
-                    }, 500);
-                };
+                        showMessage('File processed successfully! Share the link below.', 'success');
+                    }, 1000);
 
-                reader.readAsDataURL(file);
+                } catch (error) {
+                    hideProgress();
+                    showMessage('Error processing file: ' + error.message, 'error');
+                }
+            };
 
-            } catch (error) {
+            reader.onerror = function() {
                 hideProgress();
-                showError('Upload failed: ' + error.message);
-            }
-        }
+                showMessage('Error reading file', 'error');
+            };
 
-        function generateFileId() {
-            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        }
-
-        function getFileIcon(type) {
-            if (type.startsWith('image/')) return 'fa-image';
-            if (type.startsWith('video/')) return 'fa-video';
-            if (type.startsWith('audio/')) return 'fa-music';
-            if (type === 'application/pdf') return 'fa-file-pdf';
-            if (type === 'text/plain') return 'fa-file-alt';
-            return 'fa-file';
+            reader.readAsDataURL(file);
         }
 
         function displayFile(fileData) {
@@ -430,61 +473,102 @@
             const filePreview = document.getElementById('filePreview');
             const shareLink = document.getElementById('shareLink');
 
-            // File info with icon
+            // Display file info
             fileInfo.innerHTML = `
-                <div class="file-name"><i class="fas ${getFileIcon(fileData.type)}"></i> ${fileData.name}</div>
-                <div class="file-size">${formatFileSize(fileData.size)} • Uploaded ${fileData.uploadDate}</div>
+                <div class="file-name"><i class="fas fa-file"></i> ${fileData.name}</div>
+                <div class="file-details">${formatFileSize(fileData.size)} • ${new Date(fileData.timestamp).toLocaleString()}</div>
             `;
 
-            // File preview
-            if (fileData.type.startsWith('image/')) {
-                filePreview.innerHTML = `<img src="${fileData.data}" alt="${fileData.name}" class="file-preview">`;
-            } else if (fileData.type.startsWith('video/')) {
-                filePreview.innerHTML = `<video src="${fileData.data}" controls class="file-preview"></video>`;
-            } else if (fileData.type.startsWith('audio/')) {
-                filePreview.innerHTML = `<audio src="${fileData.data}" controls class="file-preview"></audio>`;
-            } else if (fileData.type === 'application/pdf') {
-                filePreview.innerHTML = `<iframe src="${fileData.data}" class="file-preview" style="width:100%; height:500px;"></iframe>`;
-            } else if (fileData.type === 'text/plain') {
-                const base64 = fileData.data.split(',')[1];
-                const text = atob(base64);
-                filePreview.innerHTML = `<pre style="max-height: 500px; overflow: auto;">${text}</pre>`;
-            } else {
-                const iconClass = getFileIcon(fileData.type);
-                filePreview.innerHTML = `
-                    <div style="text-align: center; padding: 40px; background: #f8f8f8; border-radius: 10px;">
-                        <i class="fas ${iconClass} fa-3x" style="color: #ccc; margin-bottom: 20px;"></i>
-                        <div style="margin-bottom: 20px;">Preview not available for this file type</div>
-                        <button class="btn" onclick="downloadFile('${fileData.id}')">
-                            <i class="fas fa-download"></i> Download File
-                        </button>
-                    </div>
-                `;
-            }
+            // Display file preview
+            displayFilePreview(fileData, filePreview);
 
-            // Share link
+            // Generate share link
+            const encodedData = btoa(JSON.stringify(fileData));
             const currentUrl = window.location.href.split('?')[0];
-            shareLink.value = `${currentUrl}?file=${fileData.id}`;
+            shareLink.value = `${currentUrl}?d=${encodedData}`;
 
+            // Show file display section
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('fileDisplay').style.display = 'block';
         }
 
         function displaySharedFile(fileData) {
-            if (!fileData) {
-                showError('File not found or has expired');
-                return;
-            }
+            currentFileData = fileData;
             displayFile(fileData);
+            showMessage('File loaded from shared link', 'success');
         }
 
-        function downloadFile(fileId) {
-            const fileData = uploadedFiles[fileId];
-            if (!fileData) return;
+        function displayFilePreview(fileData, container) {
+            const fileType = fileData.type.toLowerCase();
+            
+            if (fileType.startsWith('image/')) {
+                container.innerHTML = `<img src="${fileData.data}" alt="${fileData.name}">`;
+            } else if (fileType.startsWith('video/')) {
+                container.innerHTML = `<video src="${fileData.data}" controls></video>`;
+            } else if (fileType.startsWith('audio/')) {
+                container.innerHTML = `<audio src="${fileData.data}" controls></audio>`;
+            } else if (fileType === 'application/pdf') {
+                container.innerHTML = `
+                    <div class="no-preview">
+                        <i class="fas fa-file-pdf"></i>
+                        <div>PDF Preview</div>
+                        <div style="margin-top: 10px;">
+                            <button class="btn" onclick="openFileInNewTab()">
+                                <i class="fas fa-external-link-alt"></i> Open PDF
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (fileType.startsWith('text/') || fileType === 'application/json') {
+                // For text files, show content if small enough
+                if (fileData.size < 50000) { // 50KB limit for text preview
+                    fetch(fileData.data)
+                        .then(response => response.text())
+                        .then(text => {
+                            container.innerHTML = `
+                                <div style="background: #f8f9fa; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px; text-align: left;">
+                                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.9rem; margin: 0; max-height: 300px; overflow-y: auto;">${text.substring(0, 2000)}${text.length > 2000 ? '...' : ''}</pre>
+                                </div>
+                            `;
+                        })
+                        .catch(() => {
+                            showNoPreview(container);
+                        });
+                } else {
+                    showNoPreview(container);
+                }
+            } else {
+                showNoPreview(container);
+            }
+        }
+
+        function showNoPreview(container) {
+            container.innerHTML = `
+                <div class="no-preview">
+                    <i class="fas fa-file"></i>
+                    <div>No preview available</div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="downloadCurrentFile()">
+                            <i class="fas fa-download"></i> Download File
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function openFileInNewTab() {
+            if (currentFileData) {
+                const newWindow = window.open();
+                newWindow.document.write(`<iframe src="${currentFileData.data}" style="width:100%; height:100vh; border:none;"></iframe>`);
+            }
+        }
+
+        function downloadCurrentFile() {
+            if (!currentFileData) return;
 
             const link = document.createElement('a');
-            link.href = fileData.data;
-            link.download = fileData.name;
+            link.href = currentFileData.data;
+            link.download = currentFileData.name;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -492,19 +576,24 @@
 
         function copyToClipboard() {
             const shareLink = document.getElementById('shareLink');
+            const copyBtn = document.getElementById('copyBtn');
+            
             shareLink.select();
             shareLink.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-
-            const copyBtn = document.querySelector('.copy-btn');
-            const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            copyBtn.style.background = '#444';
-
-            setTimeout(() => {
-                copyBtn.innerHTML = originalText;
-                copyBtn.style.background = '';
-            }, 2000);
+            
+            try {
+                document.execCommand('copy');
+                const originalHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                copyBtn.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHtml;
+                    copyBtn.classList.remove('btn-success');
+                }, 2000);
+            } catch (err) {
+                showMessage('Failed to copy link', 'error');
+            }
         }
 
         function resetUpload() {
@@ -512,31 +601,70 @@
             document.getElementById('fileDisplay').style.display = 'none';
             document.getElementById('fileInput').value = '';
             currentFileData = null;
+            clearMessages();
             
             // Clear URL parameters
             window.history.replaceState({}, document.title, window.location.pathname);
         }
 
         function showProgress() {
-            document.getElementById('progressContainer').style.display = 'block';
-            document.getElementById('progressFill').style.width = '0%';
+            const container = document.getElementById('progressContainer');
+            const loadingText = document.getElementById('loadingText');
+            const progressFill = document.getElementById('progressFill');
+            
+            container.style.display = 'block';
+            loadingText.style.display = 'block';
+            
+            // Animate progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+            }, 100);
+            
+            // Store interval for cleanup
+            container.dataset.interval = interval;
         }
 
         function hideProgress() {
-            document.getElementById('progressContainer').style.display = 'none';
-            document.getElementById('loadingText').style.display = 'none';
+            const container = document.getElementById('progressContainer');
+            const interval = container.dataset.interval;
+            
+            if (interval) {
+                clearInterval(interval);
+            }
+            
+            document.getElementById('progressFill').style.width = '100%';
+            
+            setTimeout(() => {
+                container.style.display = 'none';
+                document.getElementById('loadingText').style.display = 'none';
+                document.getElementById('progressFill').style.width = '0%';
+            }, 500);
         }
 
-        function showError(message) {
-            document.getElementById('errorMessage').innerHTML = `
-                <div class="error">
-                    <i class="fas fa-exclamation-triangle"></i> ${message}
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            
+            container.innerHTML = `
+                <div class="${className}">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    ${message}
                 </div>
             `;
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 5000);
+            }
         }
 
-        function hideError() {
-            document.getElementById('errorMessage').innerHTML = '';
+        function clearMessages() {
+            document.getElementById('messageContainer').innerHTML = '';
         }
 
         function formatFileSize(bytes) {
