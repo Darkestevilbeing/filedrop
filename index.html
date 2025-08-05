@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuickDrop - Instant File Sharing</title>
+    <title>DroPix - Instant File Sharing</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -14,14 +14,14 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            color: #2d3748;
             line-height: 1.6;
         }
         
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 20px;
             min-height: 100vh;
@@ -31,11 +31,12 @@
         }
         
         .card {
-            background: white;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e5e5;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .header {
@@ -44,15 +45,20 @@
         }
         
         h1 {
-            color: #000;
+            color: #1a202c;
             margin-bottom: 8px;
-            font-size: 2.5rem;
-            font-weight: 700;
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .subtitle {
-            color: #666;
-            font-size: 1.1rem;
+            color: #4a5568;
+            font-size: 1.2rem;
+            font-weight: 500;
         }
         
         .upload-section {
@@ -60,42 +66,62 @@
         }
         
         .upload-area {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
+            border: 3px dashed #cbd5e0;
+            border-radius: 12px;
             padding: 60px 20px;
             margin-bottom: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: #fafafa;
+            background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .upload-area:hover::before {
+            left: 100%;
         }
         
         .upload-area:hover, .upload-area.dragover {
-            border-color: #000;
-            background: #f0f0f0;
+            border-color: #667eea;
+            background: linear-gradient(145deg, #edf2f7 0%, #e2e8f0 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
         }
         
         .upload-icon {
-            font-size: 3rem;
-            color: #999;
+            font-size: 4rem;
+            color: #a0aec0;
             margin-bottom: 20px;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
         }
         
         .upload-area:hover .upload-icon {
-            color: #000;
+            color: #667eea;
+            transform: scale(1.1);
         }
         
         .upload-text {
-            font-size: 1.2rem;
-            color: #333;
+            font-size: 1.3rem;
+            color: #2d3748;
             margin-bottom: 8px;
-            font-weight: 500;
+            font-weight: 600;
         }
         
         .upload-subtext {
-            color: #666;
-            font-size: 0.9rem;
+            color: #718096;
+            font-size: 1rem;
         }
         
         #fileInput {
@@ -103,73 +129,92 @@
         }
         
         .btn {
-            background: #000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
+            padding: 14px 28px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
         }
         
         .btn:hover {
-            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
         
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
         
         .btn-secondary {
-            background: #666;
-        }
-        
-        .btn-secondary:hover {
-            background: #555;
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
         }
         
         .btn-success {
-            background: #28a745;
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
         }
         
-        .btn-success:hover {
-            background: #218838;
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
         }
         
         .progress-container {
-            margin: 20px 0;
+            margin: 25px 0;
             display: none;
         }
         
         .progress-bar {
             width: 100%;
-            height: 4px;
-            background: #e5e5e5;
-            border-radius: 2px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         
         .progress-fill {
             height: 100%;
-            background: #000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             width: 0%;
             transition: width 0.3s ease;
+            border-radius: 3px;
         }
         
         .loading-text {
-            color: #666;
-            font-size: 0.9rem;
+            color: #4a5568;
+            font-size: 1rem;
+            font-weight: 500;
             display: none;
+            text-align: center;
         }
         
         .loading-text i {
-            animation: spin 1s linear infinite;
+            animation: spin 1.5s linear infinite;
+            margin-right: 8px;
         }
         
         .file-display {
@@ -177,113 +222,168 @@
         }
         
         .file-info {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid #000;
+            background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         
         .file-name {
-            font-weight: 600;
-            color: #000;
-            margin-bottom: 5px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
             word-break: break-all;
+            font-size: 1.1rem;
         }
         
         .file-details {
-            color: #666;
-            font-size: 0.9rem;
+            color: #718096;
+            font-size: 0.95rem;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
         }
         
         .file-preview {
-            margin: 20px 0;
+            margin: 25px 0;
             text-align: center;
         }
         
         .file-preview img, .file-preview video {
             max-width: 100%;
             height: auto;
-            border-radius: 8px;
-            border: 1px solid #e5e5e5;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
         
         .file-preview audio {
             width: 100%;
+            border-radius: 8px;
         }
         
         .no-preview {
-            background: #f8f9fa;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            padding: 40px 20px;
+            background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 50px 20px;
             text-align: center;
         }
         
         .no-preview i {
-            font-size: 3rem;
-            color: #ccc;
-            margin-bottom: 15px;
+            font-size: 4rem;
+            color: #cbd5e0;
+            margin-bottom: 20px;
         }
         
         .share-section {
-            background: #f8f9fa;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
+            background: linear-gradient(145deg, #f0fff4 0%, #f0fff4 100%);
+            border: 2px solid #9ae6b4;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
         }
         
         .share-title {
-            color: #000;
-            font-weight: 600;
-            margin-bottom: 15px;
+            color: #22543d;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
         }
         
         .share-link-container {
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         
         .share-link {
             background: white;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 10px 12px;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            padding: 12px 16px;
             flex: 1;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: #333;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            color: #2d3748;
+            transition: border-color 0.3s ease;
+        }
+        
+        .share-link:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         
         .button-group {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 8px;
+        .alert {
+            padding: 16px 20px;
+            border-radius: 10px;
             margin: 20px 0;
-            border: 1px solid #f5c6cb;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border: 1px solid #c3e6cb;
+        .alert-error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+        
+        .alert-success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .alert-info {
+            background: #bee3f8;
+            color: #2b6cb0;
+            border: 1px solid #90cdf4;
+        }
+        
+        .providers {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        
+        .provider-badge {
+            background: #edf2f7;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .provider-badge.active {
+            background: #667eea;
+            color: white;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
         }
         
         @media (max-width: 768px) {
@@ -296,7 +396,7 @@
             }
             
             h1 {
-                font-size: 2rem;
+                font-size: 2.2rem;
             }
             
             .upload-area {
@@ -310,6 +410,11 @@
             .button-group {
                 flex-direction: column;
             }
+            
+            .file-details {
+                flex-direction: column;
+                gap: 8px;
+            }
         }
     </style>
 </head>
@@ -317,21 +422,26 @@
     <div class="container">
         <div class="card">
             <div class="header">
-                <h1><i class="fas fa-paper-plane"></i> QuickDrop</h1>
-                <p class="subtitle">Share files instantly with anyone, anywhere</p>
+                <h1><i class="fas fa-cloud-upload-alt"></i> DroPix</h1>
+                <p class="subtitle">Share files up to 512MB instantly with anyone, anywhere</p>
             </div>
             
             <div class="upload-section" id="uploadSection">
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
                     <div class="upload-text">Drop your file here or click to browse</div>
-                    <div class="upload-subtext">Any file type • Max 10MB for sharing</div>
+                    <div class="upload-subtext">Any file type • Up to 512MB • No registration required</div>
                 </div>
                 <input type="file" id="fileInput" accept="*/*">
                 <div style="text-align: center;">
                     <button class="btn" onclick="document.getElementById('fileInput').click()">
                         <i class="fas fa-folder-open"></i> Choose File
                     </button>
+                </div>
+                <div class="providers">
+                    <span>Powered by:</span>
+                    <span class="provider-badge" id="provider1">0x0.st</span>
+                    <span class="provider-badge" id="provider2">tmpfiles.org</span>
                 </div>
             </div>
             
@@ -340,17 +450,17 @@
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
                 <div class="loading-text" id="loadingText">
-                    <i class="fas fa-spinner"></i> Processing file...
+                    <i class="fas fa-spinner"></i> Uploading to secure servers...
                 </div>
             </div>
             
             <div id="messageContainer"></div>
             
-            <div class="file-display" id="fileDisplay">
+            <div class="file-display slide-in" id="fileDisplay">
                 <div class="file-info" id="fileInfo"></div>
                 <div class="file-preview" id="filePreview"></div>
                 <div class="share-section">
-                    <div class="share-title"><i class="fas fa-share-alt"></i> Share this file</div>
+                    <div class="share-title"><i class="fas fa-share-alt"></i> Your file is ready to share!</div>
                     <div class="share-link-container">
                         <input type="text" class="share-link" id="shareLink" readonly>
                         <button class="btn" onclick="copyToClipboard()" id="copyBtn">
@@ -358,11 +468,14 @@
                         </button>
                     </div>
                     <div class="button-group">
-                        <button class="btn btn-secondary" onclick="downloadCurrentFile()">
+                        <button class="btn btn-secondary" onclick="downloadFromUrl()">
                             <i class="fas fa-download"></i> Download
                         </button>
                         <button class="btn" onclick="resetUpload()">
                             <i class="fas fa-plus"></i> Upload Another
+                        </button>
+                        <button class="btn btn-danger" onclick="showDeleteConfirm()" id="deleteBtn" style="display: none;">
+                            <i class="fas fa-trash"></i> Delete File
                         </button>
                     </div>
                 </div>
@@ -371,20 +484,18 @@
     </div>
 
     <script>
-        let currentFileData = null;
+        let currentFileUrl = null;
+        let currentFileName = null;
+        let deleteUrl = null;
 
         // Check if viewing a shared file on page load
         window.addEventListener('load', function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const fileData = urlParams.get('d');
+            const fileUrl = urlParams.get('url');
+            const fileName = urlParams.get('name');
             
-            if (fileData) {
-                try {
-                    const decodedData = JSON.parse(atob(fileData));
-                    displaySharedFile(decodedData);
-                } catch (error) {
-                    showMessage('Invalid or corrupted file link', 'error');
-                }
+            if (fileUrl && fileName) {
+                displaySharedFile(decodeURIComponent(fileUrl), decodeURIComponent(fileName));
             }
         });
 
@@ -420,158 +531,215 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            // File size limit for URL sharing (10MB)
-            if (file.size > 10 * 1024 * 1024) {
-                showMessage('File size must be less than 10MB for link sharing', 'error');
+            // File size limit check (512MB)
+            if (file.size > 512 * 1024 * 1024) {
+                showMessage('File size must be less than 512MB', 'error');
                 return;
             }
 
-            processFile(file);
+            uploadFile(file);
         }
 
-        function processFile(file) {
+        async function uploadFile(file) {
             showProgress();
             clearMessages();
 
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const fileData = {
-                        name: file.name,
-                        size: file.size,
-                        type: file.type,
-                        data: e.target.result,
-                        timestamp: Date.now()
-                    };
-
-                    currentFileData = fileData;
-                    
-                    // Simulate processing time
-                    setTimeout(() => {
-                        hideProgress();
-                        displayFile(fileData);
-                        showMessage('File processed successfully! Share the link below.', 'success');
-                    }, 1000);
-
-                } catch (error) {
-                    hideProgress();
-                    showMessage('Error processing file: ' + error.message, 'error');
+            // Try 0x0.st first (supports up to 512MB)
+            try {
+                document.getElementById('provider1').classList.add('active');
+                const result = await uploadTo0x0(file);
+                if (result.success) {
+                    handleUploadSuccess(result, file);
+                    return;
                 }
-            };
+            } catch (error) {
+                console.log('0x0.st failed:', error);
+                document.getElementById('provider1').classList.remove('active');
+            }
 
-            reader.onerror = function() {
-                hideProgress();
-                showMessage('Error reading file', 'error');
-            };
+            // Fallback to tmpfiles.org (60 minutes retention)
+            try {
+                document.getElementById('provider2').classList.add('active');
+                const result = await uploadToTmpFiles(file);
+                if (result.success) {
+                    handleUploadSuccess(result, file);
+                    return;
+                }
+            } catch (error) {
+                console.log('tmpfiles.org failed:', error);
+                document.getElementById('provider2').classList.remove('active');
+            }
 
-            reader.readAsDataURL(file);
+            // All providers failed
+            hideProgress();
+            showMessage('Upload failed. Please try again or use a smaller file.', 'error');
+        }
+
+        async function uploadTo0x0(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('https://0x0.st/', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const url = await response.text();
+                return {
+                    success: true,
+                    url: url.trim(),
+                    deleteUrl: null,
+                    provider: '0x0.st'
+                };
+            } else {
+                throw new Error('Upload failed');
+            }
+        }
+
+        async function uploadToTmpFiles(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('https://tmpfiles.org/api/v1/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return {
+                    success: true,
+                    url: data.data.url,
+                    deleteUrl: data.data.url.replace('/dl/', '/delete/'),
+                    provider: 'tmpfiles.org'
+                };
+            } else {
+                throw new Error('Upload failed');
+            }
+        }
+
+        function handleUploadSuccess(result, file) {
+            currentFileUrl = result.url;
+            currentFileName = file.name;
+            deleteUrl = result.deleteUrl;
+
+            hideProgress();
+            displayFile({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                url: result.url,
+                provider: result.provider,
+                timestamp: Date.now()
+            });
+            
+            showMessage(`File uploaded successfully to ${result.provider}!`, 'success');
         }
 
         function displayFile(fileData) {
             const fileInfo = document.getElementById('fileInfo');
             const filePreview = document.getElementById('filePreview');
             const shareLink = document.getElementById('shareLink');
+            const deleteBtn = document.getElementById('deleteBtn');
 
             // Display file info
             fileInfo.innerHTML = `
                 <div class="file-name"><i class="fas fa-file"></i> ${fileData.name}</div>
-                <div class="file-details">${formatFileSize(fileData.size)} • ${new Date(fileData.timestamp).toLocaleString()}</div>
+                <div class="file-details">
+                    <span><i class="fas fa-weight-hanging"></i> ${formatFileSize(fileData.size)}</span>
+                    <span><i class="fas fa-server"></i> ${fileData.provider}</span>
+                    <span><i class="fas fa-clock"></i> ${new Date(fileData.timestamp).toLocaleString()}</span>
+                </div>
             `;
 
             // Display file preview
             displayFilePreview(fileData, filePreview);
 
-            // Generate share link
-            const encodedData = btoa(JSON.stringify(fileData));
+            // Generate share link with current domain
             const currentUrl = window.location.href.split('?')[0];
-            shareLink.value = `${currentUrl}?d=${encodedData}`;
+            const shareUrl = `${currentUrl}?url=${encodeURIComponent(fileData.url)}&name=${encodeURIComponent(fileData.name)}`;
+            shareLink.value = shareUrl;
+
+            // Show delete button if available
+            if (deleteUrl) {
+                deleteBtn.style.display = 'inline-block';
+            }
 
             // Show file display section
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('fileDisplay').style.display = 'block';
         }
 
-        function displaySharedFile(fileData) {
-            currentFileData = fileData;
+        function displaySharedFile(fileUrl, fileName) {
+            currentFileUrl = fileUrl;
+            currentFileName = fileName;
+            
+            // Extract file extension for type detection
+            const extension = fileName.split('.').pop().toLowerCase();
+            const mimeTypes = {
+                'jpg': 'image/jpeg', 'jpeg': 'image/jpeg', 'png': 'image/png', 'gif': 'image/gif',
+                'mp4': 'video/mp4', 'webm': 'video/webm', 'ogg': 'video/ogg',
+                'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'ogg': 'audio/ogg',
+                'pdf': 'application/pdf', 'txt': 'text/plain'
+            };
+
+            const fileData = {
+                name: fileName,
+                size: 0, // Unknown for shared files
+                type: mimeTypes[extension] || 'application/octet-stream',
+                url: fileUrl,
+                provider: fileUrl.includes('0x0.st') ? '0x0.st' : 'tmpfiles.org',
+                timestamp: Date.now()
+            };
+
             displayFile(fileData);
-            showMessage('File loaded from shared link', 'success');
+            showMessage('File loaded from shared link', 'info');
         }
 
         function displayFilePreview(fileData, container) {
             const fileType = fileData.type.toLowerCase();
+            const fileUrl = fileData.url;
             
             if (fileType.startsWith('image/')) {
-                container.innerHTML = `<img src="${fileData.data}" alt="${fileData.name}">`;
+                container.innerHTML = `<img src="${fileUrl}" alt="${fileData.name}" onload="this.style.opacity=1" style="opacity:0;transition:opacity 0.3s">`;
             } else if (fileType.startsWith('video/')) {
-                container.innerHTML = `<video src="${fileData.data}" controls></video>`;
+                container.innerHTML = `<video src="${fileUrl}" controls preload="metadata"></video>`;
             } else if (fileType.startsWith('audio/')) {
-                container.innerHTML = `<audio src="${fileData.data}" controls></audio>`;
+                container.innerHTML = `<audio src="${fileUrl}" controls preload="metadata"></audio>`;
             } else if (fileType === 'application/pdf') {
                 container.innerHTML = `
                     <div class="no-preview">
                         <i class="fas fa-file-pdf"></i>
-                        <div>PDF Preview</div>
-                        <div style="margin-top: 10px;">
-                            <button class="btn" onclick="openFileInNewTab()">
-                                <i class="fas fa-external-link-alt"></i> Open PDF
-                            </button>
-                        </div>
+                        <div style="margin: 15px 0;">PDF Document</div>
+                        <button class="btn" onclick="window.open('${fileUrl}', '_blank')">
+                            <i class="fas fa-external-link-alt"></i> Open PDF
+                        </button>
                     </div>
                 `;
-            } else if (fileType.startsWith('text/') || fileType === 'application/json') {
-                // For text files, show content if small enough
-                if (fileData.size < 50000) { // 50KB limit for text preview
-                    fetch(fileData.data)
-                        .then(response => response.text())
-                        .then(text => {
-                            container.innerHTML = `
-                                <div style="background: #f8f9fa; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px; text-align: left;">
-                                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.9rem; margin: 0; max-height: 300px; overflow-y: auto;">${text.substring(0, 2000)}${text.length > 2000 ? '...' : ''}</pre>
-                                </div>
-                            `;
-                        })
-                        .catch(() => {
-                            showNoPreview(container);
-                        });
-                } else {
-                    showNoPreview(container);
-                }
             } else {
-                showNoPreview(container);
-            }
-        }
-
-        function showNoPreview(container) {
-            container.innerHTML = `
-                <div class="no-preview">
-                    <i class="fas fa-file"></i>
-                    <div>No preview available</div>
-                    <div style="margin-top: 15px;">
-                        <button class="btn" onclick="downloadCurrentFile()">
+                container.innerHTML = `
+                    <div class="no-preview">
+                        <i class="fas fa-file"></i>
+                        <div style="margin: 15px 0;">Preview not available</div>
+                        <button class="btn" onclick="downloadFromUrl()">
                             <i class="fas fa-download"></i> Download File
                         </button>
                     </div>
-                </div>
-            `;
-        }
-
-        function openFileInNewTab() {
-            if (currentFileData) {
-                const newWindow = window.open();
-                newWindow.document.write(`<iframe src="${currentFileData.data}" style="width:100%; height:100vh; border:none;"></iframe>`);
+                `;
             }
         }
 
-        function downloadCurrentFile() {
-            if (!currentFileData) return;
-
-            const link = document.createElement('a');
-            link.href = currentFileData.data;
-            link.download = currentFileData.name;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        function downloadFromUrl() {
+            if (currentFileUrl) {
+                const link = document.createElement('a');
+                link.href = currentFileUrl;
+                link.download = currentFileName || 'download';
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
         }
 
         function copyToClipboard() {
@@ -591,8 +759,32 @@
                     copyBtn.innerHTML = originalHtml;
                     copyBtn.classList.remove('btn-success');
                 }, 2000);
+                
+                showMessage('Link copied to clipboard!', 'success');
             } catch (err) {
                 showMessage('Failed to copy link', 'error');
+            }
+        }
+
+        function showDeleteConfirm() {
+            if (confirm('Are you sure you want to delete this file? This action cannot be undone.')) {
+                deleteFile();
+            }
+        }
+
+        async function deleteFile() {
+            if (!deleteUrl) return;
+            
+            try {
+                const response = await fetch(deleteUrl, { method: 'DELETE' });
+                if (response.ok) {
+                    showMessage('File deleted successfully', 'success');
+                    setTimeout(resetUpload, 2000);
+                } else {
+                    showMessage('Failed to delete file', 'error');
+                }
+            } catch (error) {
+                showMessage('Failed to delete file', 'error');
             }
         }
 
@@ -600,7 +792,11 @@
             document.getElementById('uploadSection').style.display = 'block';
             document.getElementById('fileDisplay').style.display = 'none';
             document.getElementById('fileInput').value = '';
-            currentFileData = null;
+            document.getElementById('provider1').classList.remove('active');
+            document.getElementById('provider2').classList.remove('active');
+            currentFileUrl = null;
+            currentFileName = null;
+            deleteUrl = null;
             clearMessages();
             
             // Clear URL parameters
@@ -618,12 +814,11 @@
             // Animate progress
             let progress = 0;
             const interval = setInterval(() => {
-                progress += Math.random() * 20;
-                if (progress > 90) progress = 90;
+                progress += Math.random() * 15;
+                if (progress > 85) progress = 85;
                 progressFill.style.width = progress + '%';
-            }, 100);
+            }, 150);
             
-            // Store interval for cleanup
             container.dataset.interval = interval;
         }
 
@@ -641,22 +836,26 @@
                 container.style.display = 'none';
                 document.getElementById('loadingText').style.display = 'none';
                 document.getElementById('progressFill').style.width = '0%';
-            }, 500);
+            }, 800);
         }
 
         function showMessage(message, type = 'info') {
             const container = document.getElementById('messageContainer');
-            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            const icons = {
+                error: 'exclamation-triangle',
+                success: 'check-circle',
+                info: 'info-circle'
+            };
             
             container.innerHTML = `
-                <div class="${className}">
-                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <div class="alert alert-${type}">
+                    <i class="fas fa-${icons[type]}"></i>
                     ${message}
                 </div>
             `;
             
-            // Auto-hide success messages
-            if (type === 'success') {
+            // Auto-hide success and info messages
+            if (type !== 'error') {
                 setTimeout(() => {
                     container.innerHTML = '';
                 }, 5000);
