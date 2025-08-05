@@ -304,13 +304,17 @@
     <div class="container">
         <div class="card">
             <h1><i class="fas fa-shield-alt"></i> FileVault</h1>
-            <p class="subtitle">Secure file sharing with encrypted links</p>
+            <p class="subtitle">Secure file sharing powered by KrakenFiles</p>
+            
+            <div id="localWarning" style="display: none; background: #2d1a1a; color: #ff6b6b; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ff4444;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Local File Detected:</strong> Please upload this file to Netlify, GitHub Pages, or another web host for file uploads to work properly.
+            </div>
             
             <div class="upload-section" id="uploadSection">
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt upload-icon"></i>
                     <div class="upload-text">Drop files here or click to browse</div>
-                    <div class="upload-subtext">Any file type, up to 100MB</div>
+                    <div class="upload-subtext">Any file type, up to 1GB</div>
                 </div>
                 <input type="file" id="fileInput" accept="*/*">
                 <button class="btn" onclick="document.getElementById('fileInput').click()">
@@ -323,7 +327,7 @@
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
                 <div class="loading" id="loadingText">
-                    <i class="fas fa-spinner"></i> Uploading to secure servers...
+                    <i class="fas fa-spinner"></i> <span id="uploadStatus">Preparing upload...</span>
                 </div>
             </div>
             
@@ -360,12 +364,19 @@
     </div>
 
     <script>
+        const API_KEY = 'NDdkNDVlMmY1ODZhZDE3NDNcrWd44NezvNsG_N9O90zkDQkTDIs6tSIEQJoHv-Vf';
+        
         // Check if viewing a shared file
         window.addEventListener('load', function() {
+            // Show warning if running locally
+            if (window.location.protocol === 'file:') {
+                document.getElementById('localWarning').style.display = 'block';
+            }
+            
             const urlParams = new URLSearchParams(window.location.search);
-            const fileKey = urlParams.get('file');
-            if (fileKey) {
-                loadSharedFile(fileKey);
+            const fileHash = urlParams.get('file');
+            if (fileHash) {
+                loadSharedFile(fileHash);
             }
         });
 
@@ -402,8 +413,8 @@
             const file = e.target.files[0];
             if (!file) return;
 
-            if (file.size > 100 * 1024 * 1024) { // 100MB limit
-                showMessage('File size must be less than 100MB', 'error');
+            if (file.size > 1024 * 1024 * 1024) {
+                showMessage('File size must be less than 1GB', 'error');
                 return;
             }
 
@@ -413,66 +424,117 @@
         async function uploadFile(file) {
             showProgress();
             hideMessage();
-
-            // Uguu/Litterbox only supports files up to 100MB
-            if (file.size > 100 * 1024 * 1024) {
-                hideProgress();
-                showMessage('File size must be less than 100MB for Uguu/Litterbox.', 'error');
-                return;
-            }
+            updateUploadStatus('Getting available server...');
 
             try {
-                const formData = new FormData();
-                formData.append('reqtype', 'fileupload');
-                formData.append('time', '24h'); // File expires in 24 hours
-                formData.append('fileToUpload', file);
+                // Check if running locally
+                if (window.location.protocol === 'file:') {
+                    throw new Error('Please host this file on a web server (like Netlify) to enable file uploads. Local file:// protocol blocks API requests.');
+                }
 
-                const res = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
-                    method: 'POST',
-                    body: formData
+                // Step 1: Get available server with CORS handling
+                const serverResponse = await fetch('https://krakenfiles.com/api/server/available', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors'
                 });
 
-                const url = await res.text();
+                if (!serverResponse.ok) {
+                    throw new Error('Failed to get upload server - Status: ' + serverResponse.status);
+                }
 
-                if (!url.startsWith('https://')) {
-                    throw new Error('Upload failed: ' + url);
+                const serverData = await serverResponse.json();
+                
+                if (serverData.status !== 200) {
+                    throw new Error(serverData.data?.message || 'No servers available');
+                }
+
+                const { url: uploadUrl, serverAccessToken } = serverData.data;
+                
+                updateUploadStatus('Uploading to KrakenFiles...');
+                
+                // Step 2: Upload file
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('serverAccessToken', serverAccessToken);
+
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-AUTH-TOKEN': API_KEY
+                    },
+                    body: formData,
+                    mode: 'cors'
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error('Upload failed - Status: ' + uploadResponse.status);
+                }
+
+                const uploadData = await uploadResponse.json();
+                
+                if (uploadData.status !== 200) {
+                    throw new Error(uploadData.data?.message || 'Upload failed');
                 }
 
                 const fileData = {
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    url: url,
-                    downloadUrl: url,
-                    uploadDate: new Date().toLocaleString()
+                    name: uploadData.data.title,
+                    size: uploadData.data.size,
+                    hash: uploadData.data.hash,
+                    url: uploadData.data.url,
+                    uploadDate: new Date().toLocaleString(),
+                    type: file.type
                 };
 
-                const fileKey = btoa(url).replace(/[^a-zA-Z0-9]/g, '').substring(0, 12);
-                localStorage.setItem('file_' + fileKey, JSON.stringify(fileData));
+                // Store file info in localStorage
+                localStorage.setItem('kraken_' + fileData.hash, JSON.stringify(fileData));
 
                 hideProgress();
-                displayFile(fileData, fileKey);
+                displayFile(fileData);
+                showMessage('File uploaded successfully to KrakenFiles!', 'success');
+
             } catch (error) {
                 hideProgress();
-                showMessage(error.message, 'error');
+                let errorMessage = error.message;
+                
+                // Handle common CORS errors
+                if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+                    if (window.location.protocol === 'file:') {
+                        errorMessage = 'Please upload this file to Netlify or another web host. File uploads don\'t work when opening HTML files directly from your computer.';
+                    } else {
+                        errorMessage = 'Network error: Please check your internet connection and try again. KrakenFiles servers might be temporarily unavailable.';
+                    }
+                }
+                
+                showMessage('Upload failed: ' + errorMessage, 'error');
+                console.error('Upload error:', error);
             }
         }
 
-        async function loadSharedFile(fileKey) {
-            const fileData = localStorage.getItem('file_' + fileKey);
+        async function loadSharedFile(fileHash) {
+            // First try to get from localStorage
+            let fileData = localStorage.getItem('kraken_' + fileHash);
             
             if (fileData) {
-                const file = JSON.parse(fileData);
-                displayDownloadView(file, fileKey);
+                fileData = JSON.parse(fileData);
+                displayDownloadView(fileData);
             } else {
-                showMessage('File not found or has expired', 'error');
-                setTimeout(() => {
-                    window.location.href = window.location.pathname;
-                }, 3000);
+                // If not in localStorage, create basic info from hash
+                const basicFileData = {
+                    name: 'Shared File',
+                    hash: fileHash,
+                    url: `https://krakenfiles.com/view/${fileHash}/file.html`,
+                    uploadDate: 'Unknown',
+                    size: 0
+                };
+                displayDownloadView(basicFileData);
             }
         }
 
-        function displayFile(fileData, fileKey) {
+        function displayFile(fileData) {
             const fileInfo = document.getElementById('fileInfo');
             const filePreview = document.getElementById('filePreview');
             const shareLink = document.getElementById('shareLink');
@@ -481,49 +543,47 @@
             fileInfo.innerHTML = `
                 <div class="file-name"><i class="fas fa-file"></i> ${fileData.name}</div>
                 <div class="file-size">${formatFileSize(fileData.size)} • Uploaded ${fileData.uploadDate}</div>
+                <div style="margin-top: 10px; color: #888; font-size: 0.8rem;">Hash: ${fileData.hash}</div>
             `;
 
-            // File preview
-            if (fileData.type.startsWith('image/')) {
-                filePreview.innerHTML = `<img src="${fileData.downloadUrl}" alt="${fileData.name}" class="file-preview">`;
-            } else if (fileData.type.startsWith('video/')) {
-                filePreview.innerHTML = `<video src="${fileData.downloadUrl}" controls class="file-preview"></video>`;
-            } else if (fileData.type.startsWith('audio/')) {
-                filePreview.innerHTML = `<audio src="${fileData.downloadUrl}" controls style="width: 100%;"></audio>`;
-            } else {
-                filePreview.innerHTML = `
-                    <div class="download-section">
-                        <i class="fas fa-file fa-3x download-icon"></i>
-                        <div style="margin-bottom: 20px;">Preview not available for this file type</div>
-                        <button class="btn" onclick="window.open('${fileData.downloadUrl}', '_blank')">
-                            <i class="fas fa-download"></i> Download File
-                        </button>
-                    </div>
-                `;
-            }
+            // File preview - KrakenFiles doesn't provide direct file URLs for preview
+            // So we'll show a download link for all files
+            filePreview.innerHTML = `
+                <div class="download-section">
+                    <i class="fas fa-file fa-3x download-icon"></i>
+                    <div style="margin-bottom: 20px;">Click below to view/download your file</div>
+                    <button class="btn" onclick="window.open('${fileData.url}', '_blank')">
+                        <i class="fas fa-external-link-alt"></i> Open on KrakenFiles
+                    </button>
+                </div>
+            `;
 
             // Share link
             const currentUrl = window.location.href.split('?')[0];
-            shareLink.value = `${currentUrl}?file=${fileKey}`;
+            shareLink.value = `${currentUrl}?file=${fileData.hash}`;
 
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('fileDisplay').style.display = 'block';
-            showMessage('File uploaded successfully! Share the link below.', 'success');
         }
 
-        function displayDownloadView(fileData, fileKey) {
+        function displayDownloadView(fileData) {
             const downloadInfo = document.getElementById('downloadInfo');
             const downloadBtn = document.getElementById('downloadBtn');
 
             downloadInfo.innerHTML = `
                 <div class="download-name">${fileData.name}</div>
-                <div class="download-size">${formatFileSize(fileData.size)} • Uploaded ${fileData.uploadDate}</div>
+                <div class="download-size">${fileData.size > 0 ? formatFileSize(fileData.size) + ' • ' : ''}Uploaded ${fileData.uploadDate}</div>
+                <div style="margin-top: 10px; color: #666; font-family: monospace; font-size: 0.8rem;">ID: ${fileData.hash}</div>
             `;
 
-            downloadBtn.onclick = () => window.open(fileData.downloadUrl, '_blank');
+            downloadBtn.onclick = () => window.open(fileData.url, '_blank');
 
             document.getElementById('uploadSection').style.display = 'none';
             document.getElementById('downloadDisplay').style.display = 'block';
+        }
+
+        function updateUploadStatus(status) {
+            document.getElementById('uploadStatus').textContent = status;
         }
 
         function copyToClipboard() {
@@ -559,10 +619,10 @@
             const progressFill = document.getElementById('progressFill');
             let progress = 0;
             const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) progress = 90;
+                progress += Math.random() * 10;
+                if (progress > 85) progress = 85;
                 progressFill.style.width = progress + '%';
-            }, 200);
+            }, 300);
             
             // Store interval to clear later
             window.uploadInterval = interval;
@@ -601,17 +661,6 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        async function getRootFolderId(apiToken) {
-            const res = await fetch(`https://api.gofile.io/getAccountDetails?token=${apiToken}`);
-            const data = await res.json();
-
-            if (data.status !== "ok") {
-                throw new Error("Failed to get root folder ID: " + data.status);
-            }
-
-            return data.data.rootFolder;
         }
     </script>
 </body>
